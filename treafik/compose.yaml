@@ -1,0 +1,38 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - "80:80"
+      - "443:443"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # - "./letsencrypt:/letsencrypt"
+      - "./config/treafik.yaml:/etc/traefik/traefik.yaml:ro"
+      - "./certs:/certs:ro"
+      - "./dynamic:/dynamic:ro"
+    labels:
+      # Enable self‑routing
+      - "traefik.enable=true"
+
+      # Dashboard router
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.docker.localhost`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.tls=true"
+
+      # for enable public domain with letsencrypt ssl 
+      # - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+
+      # Basic‑auth middleware
+      # amin:amino
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=amin:$$apr1$$MSAarJL1$$YwknWUXPBW2Evaqb25viq/"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth@docker"
+
+
+networks:
+  proxy:
+    name: proxy

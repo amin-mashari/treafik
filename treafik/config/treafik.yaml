@@ -1,0 +1,56 @@
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: letsencrypt
+        # Uncomment below if you want to enable HTTP/2 and HSTS
+        # options: default
+
+certificatesResolvers:
+  letsencrypt:
+   acme:
+     email: aminmashari20@gmail.com
+     storage: /letsencrypt/acme.json
+     tlsChallenge: {}
+     #httpchallenge: "web"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: proxy
+  file: 
+    filename: "/dynamic/tls.yaml"
+
+api:
+  dashboard: true
+  insecure: false
+
+log:
+  level: INFO          # DEBUG, INFO, WARN, ERROR
+  filePath: /var/log/traefik/traefik.log
+  format: common       # or json
+
+accessLog:
+  filePath: /var/log/traefik/access.log
+  bufferingSize: 100   # Improves performance
+
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+    entryPoint: metrics
+
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
